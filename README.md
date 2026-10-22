@@ -2,7 +2,7 @@
 
 Um mapa interativo completo, rápido, elegante e responsivo com curadoria gastronômica, festivais temporários e benefícios para Belo Horizonte e região (com suporte estendido a São Paulo).
 
-👉 **Acesse o mapa ao vivo:** [rogerioc.github.io/my-duogourmet-map](https://rogerioc.github.io/my-duogourmet-map/)
+👉 **Acesse o mapa ao vivo:** [rogerioc.github.io/gourmet-map](https://rogerioc.github.io/gourmet-map/)
 
 ---
 
