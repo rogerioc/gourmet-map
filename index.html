@@ -663,8 +663,16 @@
             color: var(--text-main) !important;
             border: 1px solid var(--border-color);
             border-radius: 16px;
-            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
-            padding: 4px;
+            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.16);
+            padding: 0 !important;
+            overflow: hidden;
+            max-height: 80vh;
+        }
+
+        .leaflet-popup-content {
+            margin: 0 !important;
+            line-height: 1.4;
+            max-height: 80vh;
         }
 
         .leaflet-popup-tip {
@@ -673,18 +681,64 @@
             box-shadow: 0 3px 6px rgba(0,0,0,0.05);
         }
 
+        .leaflet-popup-close-button {
+            top: 10px !important;
+            right: 12px !important;
+            width: 26px !important;
+            height: 26px !important;
+            font: 18px/26px Tahoma, Verdana, sans-serif !important;
+            color: #64748b !important;
+            background: #f1f5f9 !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            z-index: 20;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+            text-decoration: none !important;
+        }
+
+        .leaflet-popup-close-button:hover {
+            color: #0f172a !important;
+            background: #e2e8f0 !important;
+            transform: scale(1.05);
+        }
+
         .popup-content {
             display: flex;
             flex-direction: column;
             gap: 8px;
-            min-width: 250px;
-            max-width: 320px;
-            padding: 8px;
+            min-width: 260px;
+            max-width: 330px;
+            padding: 14px 16px;
+            max-height: 75vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+        }
+
+        /* Scrollbar customizada e suave para o popup */
+        .popup-content::-webkit-scrollbar {
+            width: 5px;
+        }
+        .popup-content::-webkit-scrollbar-track {
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+        .popup-content::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .popup-content::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
 
         .popup-header {
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 8px;
+            padding-right: 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -928,10 +982,23 @@
                 font-size: 15px;
             }
 
+            .leaflet-popup-content-wrapper {
+                max-height: min(72vh, 480px) !important;
+                border-radius: 14px;
+            }
+            .leaflet-popup-content {
+                max-height: min(72vh, 480px) !important;
+            }
             .popup-content {
-                max-width: 250px;
+                min-width: 240px;
+                max-width: 285px;
+                max-height: min(68vh, 440px);
                 font-size: 13px;
-                padding: 4px;
+                padding: 12px 14px;
+                overflow-y: auto;
+                overflow-x: hidden;
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
             }
             .popup-schedule-table {
                 font-size: 11px;
@@ -1408,6 +1475,43 @@
             populateFilters();
             renderListAndMarkers();
 
+            // Função centralizada e segura para abrir marcador e popup (com suporte a mobile e transição da sidebar)
+            function openRestaurantMarker(marker) {
+                if (!marker) return;
+                const isMobile = window.innerWidth <= 768;
+                if (isMobile) {
+                    // Em telas pequenas, fechar a sidebar primeiro
+                    document.body.classList.add('sidebar-collapsed');
+                    const toggleIcon = document.getElementById('toggle-icon');
+                    if (toggleIcon) {
+                        toggleIcon.className = "fa-solid fa-chevron-right";
+                    }
+                    
+                    // Aguardar o término da animação CSS da sidebar (300ms) para que o mapa tenha o tamanho exato e toques não colidam
+                    setTimeout(() => {
+                        map.invalidateSize();
+                        if (markerCluster && typeof markerCluster.zoomToShowLayer === 'function') {
+                            markerCluster.zoomToShowLayer(marker, () => {
+                                marker.openPopup();
+                            });
+                        } else {
+                            map.setView(marker.getLatLng(), 16);
+                            marker.openPopup();
+                        }
+                    }, 320);
+                } else {
+                    if (markerCluster && typeof markerCluster.zoomToShowLayer === 'function') {
+                        markerCluster.zoomToShowLayer(marker, () => {
+                            marker.openPopup();
+                        });
+                    } else {
+                        map.setView(marker.getLatLng(), 16);
+                        marker.openPopup();
+                    }
+                }
+            }
+            window.openRestaurantMarker = openRestaurantMarker;
+
             // Função modular para focar e abrir o popup de um restaurante específico
             window.focusRestaurant = function(targetSlug) {
                 if (!targetSlug) return;
@@ -1421,22 +1525,7 @@
                     return false;
                 });
                 if (marker) {
-                    // Em telas pequenas, fechar a sidebar para mostrar o mapa
-                    if (window.innerWidth <= 768) {
-                        document.body.classList.add('sidebar-collapsed');
-                        const toggleIcon = document.getElementById('toggle-icon');
-                        if (toggleIcon) {
-                            toggleIcon.className = "fa-solid fa-chevron-right";
-                        }
-                    }
-                    if (markerCluster && typeof markerCluster.zoomToShowLayer === 'function') {
-                        markerCluster.zoomToShowLayer(marker, () => {
-                            marker.openPopup();
-                        });
-                    } else {
-                        map.setView(marker.getLatLng(), 16);
-                        marker.openPopup();
-                    }
+                    openRestaurantMarker(marker);
                 }
             };
 
@@ -1982,10 +2071,22 @@
             filtered.forEach(r => {
                 // Marcador no Mapa
                 const marker = L.marker([r.lat, r.lon], { icon: getMarkerColor(r) });
-                marker.bindPopup(generatePopupHTML(r));
+                marker.bindPopup(generatePopupHTML(r), {
+                    maxWidth: 320,
+                    minWidth: 260,
+                    maxHeight: 460,
+                    autoPan: true,
+                    autoPanPaddingTopLeft: [10, 60],
+                    autoPanPaddingBottomRight: [10, 20],
+                    closeButton: true
+                });
                 
-                // Rastreamento de visualização de detalhes do restaurante no mapa
-                marker.on('popupopen', () => {
+                // Rastreamento de visualização de detalhes do restaurante no mapa e prevenção de scroll propagation
+                marker.on('popupopen', (e) => {
+                    const popupEl = e.popup ? e.popup.getElement() : null;
+                    if (popupEl) {
+                        L.DomEvent.disableScrollPropagation(popupEl);
+                    }
                     if (typeof window.logFirebaseEvent === 'function') {
                         window.logFirebaseEvent('view_item', {
                             item_id: r.name,
@@ -2006,10 +2107,6 @@
                 const card = document.createElement('div');
                 card.className = "restaurant-card";
                 card.onclick = () => {
-                    // Focar no mapa e abrir popup
-                    map.setView([r.lat, r.lon], 16);
-                    marker.openPopup();
-                    
                     // Rastreamento de clique no card da lista
                     if (typeof window.logFirebaseEvent === 'function') {
                         window.logFirebaseEvent('select_item', {
@@ -2020,12 +2117,8 @@
                             source: 'list'
                         });
                     }
-                    
-                    // Em telas pequenas, fechar a sidebar para mostrar o mapa
-                    if (window.innerWidth <= 768) {
-                        document.body.classList.add('sidebar-collapsed');
-                        document.getElementById('toggle-icon').className = "fa-solid fa-chevron-right";
-                    }
+
+                    openRestaurantMarker(marker);
                 };
 
                 const cleanAddress = (r.address || '').replace(', ' + r.city + ',', '').replace(', ' + r.city, '').replace(', MG', '');
