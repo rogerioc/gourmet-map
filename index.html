@@ -952,6 +952,7 @@
             top: 20px;
             width: 40px;
             height: 40px;
+            padding: 0;
             background: #ffffff;
             border: 1px solid var(--border-color);
             border-left: none;
@@ -963,6 +964,9 @@
             cursor: pointer;
             z-index: 1001;
             box-shadow: 4px 2px 12px rgba(15, 23, 42, 0.08);
+            font: inherit;
+            appearance: none;
+            -webkit-appearance: none;
         }
 
         .sidebar-collapsed #sidebar {
@@ -1251,12 +1255,12 @@
     <div id="app-container">
         
         <!-- Sidebar -->
-        <div id="sidebar">
-            <div class="toggle-btn" onclick="toggleSidebar()">
-                <i id="toggle-icon" class="fa-solid fa-chevron-left"></i>
-            </div>
+        <aside id="sidebar" aria-label="Painel de restaurantes e filtros">
+            <button type="button" class="toggle-btn" id="sidebarToggleBtn" aria-label="Recolher menu lateral" aria-expanded="true">
+                <i id="toggle-icon" class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+            </button>
             
-            <div class="sidebar-header">
+            <header class="sidebar-header">
                 <div class="logo">
                     <img src="favicon.png" alt="Logo" class="logo-img">
                     <h1>Gourmet Map <span>BH</span></h1>
@@ -1267,37 +1271,37 @@
                 
                 <div class="search-wrapper">
                     <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-                    <input type="text" id="searchInput" class="search-input" placeholder="Pesquisar restaurante..." aria-label="Pesquisar restaurante por nome" oninput="filterRestaurants()">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Pesquisar restaurante..." aria-label="Pesquisar restaurante por nome">
                 </div>
                 
                 <div class="category-chips-wrapper">
                     <div class="category-chips" role="toolbar" aria-label="Filtro por circuito gastronômico">
-                        <button type="button" class="category-chip active" data-source="all" aria-pressed="true" onclick="setSourceFilter('all')">
+                        <button type="button" class="category-chip active" data-source="all" aria-pressed="true">
                             <i class="fa-solid fa-layer-group" aria-hidden="true"></i> Todos <span class="chip-count" id="chipCountAll">0</span>
                         </button>
-                        <button type="button" class="category-chip" data-source="duo" aria-pressed="false" onclick="setSourceFilter('duo')">
+                        <button type="button" class="category-chip" data-source="duo" aria-pressed="false">
                             <i class="fa-solid fa-tag" aria-hidden="true"></i> Duo Gourmet <span class="chip-count" id="chipCountDuo">0</span>
                         </button>
-                        <button type="button" class="category-chip chip-rw" data-source="rw" aria-pressed="false" onclick="setSourceFilter('rw')">
+                        <button type="button" class="category-chip chip-rw" data-source="rw" aria-pressed="false">
                             <i class="fa-solid fa-wine-glass" aria-hidden="true"></i> Restaurant Week <span class="chip-count" id="chipCountRw">0</span>
                         </button>
-                        <button type="button" class="category-chip" data-source="both" aria-pressed="false" onclick="setSourceFilter('both')">
+                        <button type="button" class="category-chip" data-source="both" aria-pressed="false">
                             <i class="fa-solid fa-star" aria-hidden="true"></i> Duo + Week <span class="chip-count" id="chipCountBoth">0</span>
                         </button>
                     </div>
                 </div>
                 
-                <div class="filters-grid" role="group" aria-label="Filtros de localização, culinária e horários">
-                    <select id="cityFilter" class="filter-select" aria-label="Filtrar por cidade" onchange="onCityChange()">
+                <form class="filters-grid" role="search" aria-label="Filtros de localização, culinária e horários" onsubmit="event.preventDefault()">
+                    <select id="cityFilter" class="filter-select" aria-label="Filtrar por cidade">
                         <option value="">Todas as Cidades</option>
                     </select>
-                    <select id="neighborhoodFilter" class="filter-select" aria-label="Filtrar por bairro" onchange="filterRestaurants()">
+                    <select id="neighborhoodFilter" class="filter-select" aria-label="Filtrar por bairro">
                         <option value="">Todos os Bairros</option>
                     </select>
-                    <select id="cuisineFilter" class="filter-select" aria-label="Filtrar por tipo de cozinha" onchange="filterRestaurants()">
+                    <select id="cuisineFilter" class="filter-select" aria-label="Filtrar por tipo de cozinha">
                         <option value="">Todas as Cozinhas</option>
                     </select>
-                    <select id="dayFilter" class="filter-select" aria-label="Filtrar por dia de funcionamento" onchange="filterRestaurants()">
+                    <select id="dayFilter" class="filter-select" aria-label="Filtrar por dia de funcionamento">
                         <option value="">Qualquer dia</option>
                         <option value="Hoje">Hoje</option>
                         <option value="Segunda-feira">Segunda-feira</option>
@@ -1308,22 +1312,22 @@
                         <option value="Sábado">Sábado</option>
                         <option value="Domingo">Domingo</option>
                     </select>
-                    <select id="periodFilter" class="filter-select" aria-label="Filtrar por período (almoço ou jantar)" onchange="filterRestaurants()">
+                    <select id="periodFilter" class="filter-select" aria-label="Filtrar por período (almoço ou jantar)">
                         <option value="">Almoço/Jantar</option>
                         <option value="almoco">Somente Almoço</option>
                         <option value="jantar">Somente Jantar</option>
                     </select>
                     <div class="time-filter-group" style="display: flex; gap: 8px; align-items: center; grid-column: span 2;">
-                        <input type="time" id="timeStart" class="filter-select" aria-label="Horário inicial para filtro" onchange="filterRestaurants()" title="Horário Inicial" style="flex: 1; padding: 10px;">
+                        <input type="time" id="timeStart" class="filter-select" aria-label="Horário inicial para filtro" title="Horário Inicial" style="flex: 1; padding: 10px;">
                         <span style="color: var(--text-main); font-size: 12px; font-weight: 600;" aria-hidden="true">até</span>
-                        <input type="time" id="timeEnd" class="filter-select" aria-label="Horário final para filtro" onchange="filterRestaurants()" title="Horário Final" style="flex: 1; padding: 10px;">
+                        <input type="time" id="timeEnd" class="filter-select" aria-label="Horário final para filtro" title="Horário Final" style="flex: 1; padding: 10px;">
                     </div>
-                </div>
-            </div>
+                </form>
+            </header>
             
             <div class="stats-bar">
                 <span id="resultsCount" aria-live="polite">Carregando restaurantes...</span>
-                <span id="clearFiltersBtn" style="cursor: pointer; color: var(--accent); display: none;" onclick="clearAllFilters()">
+                <span id="clearFiltersBtn" role="button" tabindex="0" style="cursor: pointer; color: var(--accent); display: none;">
                     <i class="fa-solid fa-filter-circle-xmark"></i> Limpar filtros
                 </span>
             </div>
@@ -1332,14 +1336,14 @@
                 <!-- Preenchido via JS -->
             </div>
             
-            <div class="sidebar-footer">
+            <footer class="sidebar-footer">
                 Created By <a href="https://rogerioc.github.io/about/" target="_blank">Rogerio C.S</a><br>
                 Dados extraídos de <a href="https://www.duogourmet.com.br" target="_blank">Duo Gourmet</a> &copy;
-            </div>
-        </div>
+            </footer>
+        </aside>
         
         <!-- Map -->
-        <div id="map"></div>
+        <main id="map" aria-label="Mapa interativo"></main>
         
     </div>
 
@@ -1507,6 +1511,7 @@
 
             // Preencher filtros e lista
             populateFilters();
+            setupEventListeners();
             renderListAndMarkers();
 
             // Função centralizada e segura para abrir marcador e popup (com suporte a mobile e transição da sidebar)
@@ -2295,12 +2300,21 @@
         function toggleSidebar() {
             document.body.classList.toggle('sidebar-collapsed');
             const icon = document.getElementById('toggle-icon');
+            const toggleButton = document.getElementById('sidebarToggleBtn');
             const isCollapsed = document.body.classList.contains('sidebar-collapsed');
             
-            if (document.body.classList.contains('sidebar-collapsed')) {
+            if (isCollapsed) {
                 icon.className = "fa-solid fa-chevron-right";
+                if (toggleButton) {
+                    toggleButton.setAttribute('aria-expanded', 'false');
+                    toggleButton.setAttribute('aria-label', 'Expandir menu lateral');
+                }
             } else {
                 icon.className = "fa-solid fa-chevron-left";
+                if (toggleButton) {
+                    toggleButton.setAttribute('aria-expanded', 'true');
+                    toggleButton.setAttribute('aria-label', 'Recolher menu lateral');
+                }
             }
             
             if (typeof window.logFirebaseEvent === 'function') {
@@ -2356,6 +2370,52 @@
                 },
                 { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
             );
+        }
+
+        function setupEventListeners() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', filterRestaurants);
+            }
+
+            const cityFilter = document.getElementById('cityFilter');
+            if (cityFilter) {
+                cityFilter.addEventListener('change', onCityChange);
+            }
+
+            ['neighborhoodFilter', 'cuisineFilter', 'dayFilter', 'periodFilter', 'timeStart', 'timeEnd'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('change', filterRestaurants);
+                }
+            });
+
+            const clearBtn = document.getElementById('clearFiltersBtn');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', clearAllFilters);
+                clearBtn.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        clearAllFilters();
+                    }
+                });
+            }
+
+            const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+            if (sidebarToggleBtn) {
+                sidebarToggleBtn.addEventListener('click', toggleSidebar);
+            }
+
+            // Delegação para chips de categoria
+            const categoryChipsContainer = document.querySelector('.category-chips');
+            if (categoryChipsContainer) {
+                categoryChipsContainer.addEventListener('click', (e) => {
+                    const chip = e.target.closest('.category-chip');
+                    if (chip && chip.dataset.source) {
+                        setSourceFilter(chip.dataset.source);
+                    }
+                });
+            }
         }
 
         window.onload = initMap;
