@@ -68,16 +68,46 @@
 
     <style>
         :root {
+            /* Superfícies & Layout */
             --bg-color: #f8fafc;
             --panel-bg: rgba(255, 255, 255, 0.94);
             --card-bg: #ffffff;
             --card-bg-hover: #ffffff;
+            --border-color: #e2e8f0;
+            --border-strong: #cbd5e1;
+
+            /* Tipografia & Neutros */
             --text-main: #0f172a;
             --text-muted: #64748b;
+            --text-subtle: #94a3b8;
+            --font-family: 'Outfit', sans-serif;
+
+            /* Identidade Duo Gourmet (Âmbar / Ouro) */
             --accent: #d97706;
             --accent-hover: #b45309;
-            --border-color: #e2e8f0;
-            --font-family: 'Outfit', sans-serif;
+            --circuit-duo: #d97706;
+            --circuit-duo-subtle: #fef3c7;
+            --circuit-duo-border: #fde68a;
+            --circuit-duo-text: #92400e;
+
+            /* Identidade Restaurant Week (Rubi / Vinho) */
+            --circuit-rw: #9f1239;
+            --circuit-rw-hover: #881337;
+            --circuit-rw-subtle: #fff1f2;
+            --circuit-rw-border: #fecdd3;
+            --circuit-rw-chip-border: #fda4af;
+
+            /* Avaliações & Destaques de Terceiros */
+            --rating-google-bg: #eff6ff;
+            --rating-google-text: #1d4ed8;
+            --rating-google-border: #dbeafe;
+            --rating-google-icon: #2563eb;
+            --price-level-color: #16a34a;
+
+            /* Sombras Padrão */
+            --shadow-subtle: 0 1px 3px rgba(15, 23, 42, 0.04);
+            --shadow-elevated: 0 8px 18px rgba(15, 23, 42, 0.08);
+            --shadow-popover: 0 12px 32px rgba(15, 23, 42, 0.16);
         }
 
         * {
@@ -290,7 +320,7 @@
             background: #94a3b8;
         }
 
-        /* Restaurant Card */
+        /* Restaurant Card com otimização de renderização virtualizada nativa */
         .restaurant-card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -301,13 +331,15 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+            box-shadow: var(--shadow-subtle);
+            content-visibility: auto;
+            contain-intrinsic-size: auto 130px;
         }
 
         .restaurant-card:hover {
             transform: translateY(-2px);
-            border-color: #cbd5e1;
-            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+            border-color: var(--border-strong);
+            box-shadow: var(--shadow-elevated);
             background: #ffffff;
         }
 
@@ -335,23 +367,23 @@
             display: flex;
             align-items: center;
             gap: 4px;
-            background: #fef3c7;
-            color: #92400e;
+            background: var(--circuit-duo-subtle);
+            color: var(--circuit-duo-text);
             padding: 4px 8px;
             border-radius: 8px;
             font-weight: 600;
             font-size: 12px;
-            border: 1px solid #fde68a;
+            border: 1px solid var(--circuit-duo-border);
         }
 
         .google-rating {
-            background: #eff6ff !important;
-            color: #1d4ed8 !important;
-            border: 1px solid #dbeafe !important;
+            background: var(--rating-google-bg) !important;
+            color: var(--rating-google-text) !important;
+            border: 1px solid var(--rating-google-border) !important;
         }
         
         .google-rating i {
-            color: #2563eb !important;
+            color: var(--rating-google-icon) !important;
         }
         
         .google-rating .rating-count {
@@ -540,8 +572,8 @@
 
         /* Popup RW Card and Accordion (Light gourmet festival theme) */
         .popup-rw-card {
-            background: #fff1f2;
-            border: 1px solid #fecdd3;
+            background: var(--circuit-rw-subtle);
+            border: 1px solid var(--circuit-rw-border);
             border-radius: 12px;
             padding: 10px 12px;
             margin: 4px 0;
@@ -557,13 +589,13 @@
         .popup-rw-title {
             font-size: 12px;
             font-weight: 700;
-            color: #9f1239;
+            color: var(--circuit-rw);
             display: flex;
             align-items: center;
             gap: 6px;
         }
         .popup-rw-badge {
-            background: #9f1239;
+            background: var(--circuit-rw);
             color: #ffffff !important;
             font-size: 10px;
             font-weight: 700;
@@ -573,7 +605,7 @@
             transition: all 0.2s;
         }
         .popup-rw-badge:hover {
-            background: #881337;
+            background: var(--circuit-rw-hover);
             box-shadow: 0 2px 6px rgba(159, 18, 57, 0.3);
         }
         .popup-rw-periods {
@@ -583,25 +615,25 @@
         }
         .rw-period-chip {
             background: #ffffff;
-            border: 1px solid #fda4af;
+            border: 1px solid var(--circuit-rw-chip-border);
             border-radius: 6px;
             padding: 3px 8px;
             font-size: 11px;
-            color: #881337;
+            color: var(--circuit-rw-hover);
             box-shadow: 0 1px 2px rgba(159, 18, 57, 0.05);
         }
         .rw-period-chip strong {
-            color: #9f1239;
+            color: var(--circuit-rw);
         }
         .rw-menu-accordion {
             margin-top: 4px;
-            border-top: 1px dashed #fecdd3;
+            border-top: 1px dashed var(--circuit-rw-border);
             padding-top: 6px;
         }
         .rw-menu-accordion summary {
             font-size: 11px;
             font-weight: 600;
-            color: #9f1239;
+            color: var(--circuit-rw);
             cursor: pointer;
             user-select: none;
             outline: none;
@@ -610,7 +642,7 @@
             gap: 4px;
         }
         .rw-menu-accordion summary:hover {
-            color: #881337;
+            color: var(--circuit-rw-hover);
         }
         .rw-menu-content {
             margin-top: 8px;
@@ -625,7 +657,7 @@
         }
         .rw-dish-stage {
             font-weight: 700;
-            color: #9f1239;
+            color: var(--circuit-rw);
             font-size: 11px;
             margin-bottom: 2px;
         }
@@ -634,13 +666,13 @@
             line-height: 1.35;
         }
         .btn-rw {
-            background: linear-gradient(135deg, #9f1239 0%, #881337 100%);
+            background: linear-gradient(135deg, var(--circuit-rw) 0%, var(--circuit-rw-hover) 100%);
             color: #ffffff !important;
-            border: 1px solid #881337;
+            border: 1px solid var(--circuit-rw-hover);
             box-shadow: 0 2px 6px rgba(159, 18, 57, 0.18);
         }
         .btn-rw:hover {
-            background: linear-gradient(135deg, #be123c 0%, #9f1239 100%);
+            background: linear-gradient(135deg, #be123c 0%, var(--circuit-rw) 100%);
             color: #ffffff !important;
             box-shadow: 0 4px 12px rgba(159, 18, 57, 0.28);
         }
@@ -1234,38 +1266,38 @@
 
                 
                 <div class="search-wrapper">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="searchInput" class="search-input" placeholder="Pesquisar restaurante..." oninput="filterRestaurants()">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Pesquisar restaurante..." aria-label="Pesquisar restaurante por nome" oninput="filterRestaurants()">
                 </div>
                 
                 <div class="category-chips-wrapper">
-                    <div class="category-chips">
-                        <button type="button" class="category-chip active" data-source="all" onclick="setSourceFilter('all')">
-                            <i class="fa-solid fa-layer-group"></i> Todos <span class="chip-count" id="chipCountAll">0</span>
+                    <div class="category-chips" role="toolbar" aria-label="Filtro por circuito gastronômico">
+                        <button type="button" class="category-chip active" data-source="all" aria-pressed="true" onclick="setSourceFilter('all')">
+                            <i class="fa-solid fa-layer-group" aria-hidden="true"></i> Todos <span class="chip-count" id="chipCountAll">0</span>
                         </button>
-                        <button type="button" class="category-chip" data-source="duo" onclick="setSourceFilter('duo')">
-                            <i class="fa-solid fa-tag"></i> Duo Gourmet <span class="chip-count" id="chipCountDuo">0</span>
+                        <button type="button" class="category-chip" data-source="duo" aria-pressed="false" onclick="setSourceFilter('duo')">
+                            <i class="fa-solid fa-tag" aria-hidden="true"></i> Duo Gourmet <span class="chip-count" id="chipCountDuo">0</span>
                         </button>
-                        <button type="button" class="category-chip chip-rw" data-source="rw" onclick="setSourceFilter('rw')">
-                            <i class="fa-solid fa-wine-glass"></i> Restaurant Week <span class="chip-count" id="chipCountRw">0</span>
+                        <button type="button" class="category-chip chip-rw" data-source="rw" aria-pressed="false" onclick="setSourceFilter('rw')">
+                            <i class="fa-solid fa-wine-glass" aria-hidden="true"></i> Restaurant Week <span class="chip-count" id="chipCountRw">0</span>
                         </button>
-                        <button type="button" class="category-chip" data-source="both" onclick="setSourceFilter('both')">
-                            <i class="fa-solid fa-star"></i> Duo + Week <span class="chip-count" id="chipCountBoth">0</span>
+                        <button type="button" class="category-chip" data-source="both" aria-pressed="false" onclick="setSourceFilter('both')">
+                            <i class="fa-solid fa-star" aria-hidden="true"></i> Duo + Week <span class="chip-count" id="chipCountBoth">0</span>
                         </button>
                     </div>
                 </div>
                 
-                <div class="filters-grid">
-                    <select id="cityFilter" class="filter-select" onchange="onCityChange()">
+                <div class="filters-grid" role="group" aria-label="Filtros de localização, culinária e horários">
+                    <select id="cityFilter" class="filter-select" aria-label="Filtrar por cidade" onchange="onCityChange()">
                         <option value="">Todas as Cidades</option>
                     </select>
-                    <select id="neighborhoodFilter" class="filter-select" onchange="filterRestaurants()">
+                    <select id="neighborhoodFilter" class="filter-select" aria-label="Filtrar por bairro" onchange="filterRestaurants()">
                         <option value="">Todos os Bairros</option>
                     </select>
-                    <select id="cuisineFilter" class="filter-select" onchange="filterRestaurants()">
+                    <select id="cuisineFilter" class="filter-select" aria-label="Filtrar por tipo de cozinha" onchange="filterRestaurants()">
                         <option value="">Todas as Cozinhas</option>
                     </select>
-                    <select id="dayFilter" class="filter-select" onchange="filterRestaurants()">
+                    <select id="dayFilter" class="filter-select" aria-label="Filtrar por dia de funcionamento" onchange="filterRestaurants()">
                         <option value="">Qualquer dia</option>
                         <option value="Hoje">Hoje</option>
                         <option value="Segunda-feira">Segunda-feira</option>
@@ -1276,21 +1308,21 @@
                         <option value="Sábado">Sábado</option>
                         <option value="Domingo">Domingo</option>
                     </select>
-                    <select id="periodFilter" class="filter-select" onchange="filterRestaurants()">
+                    <select id="periodFilter" class="filter-select" aria-label="Filtrar por período (almoço ou jantar)" onchange="filterRestaurants()">
                         <option value="">Almoço/Jantar</option>
                         <option value="almoco">Somente Almoço</option>
                         <option value="jantar">Somente Jantar</option>
                     </select>
                     <div class="time-filter-group" style="display: flex; gap: 8px; align-items: center; grid-column: span 2;">
-                        <input type="time" id="timeStart" class="filter-select" onchange="filterRestaurants()" title="Horário Inicial" style="flex: 1; padding: 10px;">
-                        <span style="color: var(--text-main); font-size: 12px; font-weight: 600;">até</span>
-                        <input type="time" id="timeEnd" class="filter-select" onchange="filterRestaurants()" title="Horário Final" style="flex: 1; padding: 10px;">
+                        <input type="time" id="timeStart" class="filter-select" aria-label="Horário inicial para filtro" onchange="filterRestaurants()" title="Horário Inicial" style="flex: 1; padding: 10px;">
+                        <span style="color: var(--text-main); font-size: 12px; font-weight: 600;" aria-hidden="true">até</span>
+                        <input type="time" id="timeEnd" class="filter-select" aria-label="Horário final para filtro" onchange="filterRestaurants()" title="Horário Final" style="flex: 1; padding: 10px;">
                     </div>
                 </div>
             </div>
             
             <div class="stats-bar">
-                <span id="resultsCount">Carregando restaurantes...</span>
+                <span id="resultsCount" aria-live="polite">Carregando restaurantes...</span>
                 <span id="clearFiltersBtn" style="cursor: pointer; color: var(--accent); display: none;" onclick="clearAllFilters()">
                     <i class="fa-solid fa-filter-circle-xmark"></i> Limpar filtros
                 </span>
@@ -1630,10 +1662,13 @@
         function setSourceFilter(src) {
             activeFilters.source = src;
             document.querySelectorAll('.category-chip').forEach(chip => {
-                if (chip.getAttribute('data-source') === src) {
+                const isActive = chip.getAttribute('data-source') === src;
+                if (isActive) {
                     chip.classList.add('active');
+                    chip.setAttribute('aria-pressed', 'true');
                 } else {
                     chip.classList.remove('active');
+                    chip.setAttribute('aria-pressed', 'false');
                 }
             });
             filterRestaurants();
@@ -2107,7 +2142,11 @@
                 // Item da Lista
                 const card = document.createElement('div');
                 card.className = "restaurant-card";
-                card.onclick = () => {
+                card.setAttribute('role', 'button');
+                card.setAttribute('tabindex', '0');
+                card.setAttribute('aria-label', `Ver detalhes e localização de ${r.name}`);
+                
+                const handleCardSelection = () => {
                     // Rastreamento de clique no card da lista
                     if (typeof window.logFirebaseEvent === 'function') {
                         window.logFirebaseEvent('select_item', {
@@ -2120,6 +2159,14 @@
                     }
 
                     openRestaurantMarker(marker);
+                };
+
+                card.onclick = handleCardSelection;
+                card.onkeydown = (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleCardSelection();
+                    }
                 };
 
                 const cleanAddress = (r.address || '').replace(', ' + r.city + ',', '').replace(', ' + r.city, '').replace(', MG', '');
