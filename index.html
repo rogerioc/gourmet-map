@@ -247,6 +247,13 @@
             gap: 8px;
         }
 
+        .time-filter-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            grid-column: span 2;
+        }
+
         .filter-select {
             width: 100%;
             padding: 10px;
@@ -1003,6 +1010,9 @@
             .filters-grid {
                 grid-template-columns: 1fr;
             }
+            .time-filter-group {
+                grid-column: auto;
+            }
 
             .sidebar-header {
                 padding: 16px 14px;
@@ -1323,7 +1333,7 @@
                         <option value="almoco">Somente Almoço</option>
                         <option value="jantar">Somente Jantar</option>
                     </select>
-                    <div class="time-filter-group" style="display: flex; gap: 8px; align-items: center; grid-column: span 2;">
+                    <div class="time-filter-group">
                         <input type="time" id="timeStart" class="filter-select" aria-label="Horário inicial para filtro" title="Horário Inicial" style="flex: 1; padding: 10px;">
                         <span style="color: var(--text-main); font-size: 12px; font-weight: 600;" aria-hidden="true">até</span>
                         <input type="time" id="timeEnd" class="filter-select" aria-label="Horário final para filtro" title="Horário Final" style="flex: 1; padding: 10px;">
