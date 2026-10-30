@@ -1442,11 +1442,20 @@
             const locationControl = L.control({ position: 'topright' });
             locationControl.onAdd = function() {
                 const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-                div.innerHTML = `
-                    <a href="#" onclick="locateUser(event)" title="Minha Localização" style="display: flex; align-items: center; justify-content: center; width: 30px; height: 30px;">
-                        <i class="fa-solid fa-location-crosshairs" style="font-size: 16px;"></i>
-                    </a>
-                `;
+                const a = L.DomUtil.create('a', '', div);
+                a.href = '#';
+                a.title = 'Minha Localização';
+                a.setAttribute('aria-label', 'Obter minha localização atual');
+                a.style.display = 'flex';
+                a.style.alignItems = 'center';
+                a.style.justifyContent = 'center';
+                a.style.width = '30px';
+                a.style.height = '30px';
+                a.innerHTML = '<i class="fa-solid fa-location-crosshairs" style="font-size: 16px;" aria-hidden="true"></i>';
+                L.DomEvent.on(a, 'click', function(e) {
+                    L.DomEvent.stop(e);
+                    locateUser(e);
+                });
                 return div;
             };
             locationControl.addTo(map);
@@ -1749,74 +1758,34 @@
             }
         }
 
-        function generatePopupHTML(r) {
-            // Gerar tabela de horários
-            let scheduleRows = "";
-            const daysOrder = ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo'];
-            
-            if (r.schedule) {
-                daysOrder.forEach(day => {
-                    const sched = r.schedule[day] || r.schedule[day + ' (Hoje)'] || {};
-                    const almoco = sched.almoco || "-";
-                    const jantar = sched.jantar || "-";
-                    
-                    // Destacar o dia atual
-                    const isToday = day === todayDayName;
-                    const highlightStyle = isToday ? "style='font-weight: 700; color: #92400e; background: #fef3c7; border-radius: 4px;'" : "";
-                    
-                    scheduleRows += `<tr ${highlightStyle}>
-                        <td>${day.split('-')[0]}</td>
-                        <td>${almoco}</td>
-                        <td>${jantar}</td>
-                    </tr>`;
-                });
-            }
+        // Utilitários de escape e sanitização HTML
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
 
-            const fullUrl = r.url && r.url.startsWith('http') ? r.url : `https://www.duogourmet.com.br${r.url || ''}`;
-            const mapsUrl = r.google_maps_url || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.name + ", " + r.address)}`;
+        function escapeAttr(str) {
+            return escapeHtml(str);
+        }
 
-            let contactHtml = "";
-            if (r.phone || r.instagram || r.website) {
-                contactHtml += '<div class="popup-contact">';
-                if (r.phone) {
-                    contactHtml += `<span class="contact-item"><i class="fa-solid fa-phone"></i> ${r.phone}</span>`;
-                }
-                if (r.instagram) {
-                    const handle = r.instagram.replace('@', '');
-                    contactHtml += `<a href="https://instagram.com/${handle}" target="_blank" class="contact-item" onclick="window.logRestaurantAction('click_instagram', decodeURIComponent('${encodeURIComponent(r.name)}'))"><i class="fa-brands fa-instagram"></i> ${r.instagram}</a>`;
-                }
-                if (r.website) {
-                    contactHtml += `<a href="${r.website}" target="_blank" class="contact-item" onclick="window.logRestaurantAction('click_website', decodeURIComponent('${encodeURIComponent(r.name)}'))"><i class="fa-solid fa-globe"></i> Site</a>`;
-                }
-                contactHtml += '</div>';
-            }
-
-            let descriptionHtml = "";
-            if (r.description) {
-                descriptionHtml = `<div class="popup-description" title="${r.description}">${r.description}</div>`;
-            }
-
-            let editorialHtml = "";
-            if (r.google_editorial_summary) {
-                editorialHtml = `<div class="popup-editorial"><em>"${r.google_editorial_summary}"</em></div>`;
-            }
-
-            let priceHtml = "";
-            if (r.google_price_level) {
-                priceHtml = ` <span class="price-level" title="Faixa de preço Google: ${r.google_price_level} de 4">${"$".repeat(r.google_price_level)}</span>`;
-            }
-
+        // Subcomponentes de renderização (Templates Modulares)
+        function renderRatingBadges(r) {
             let ratingBadgeHtml = "";
             if (r.rating === 'RW') {
                 ratingBadgeHtml = `
                     <div class="rating-badge" style="background: #fff1f2; border: 1px solid #fecdd3; color: #9f1239;" title="Participante Restaurant Week">
-                        <i class="fa-solid fa-wine-glass"></i> RW
+                        <i class="fa-solid fa-wine-glass" aria-hidden="true"></i> RW
                     </div>
                 `;
             } else if (r.rating) {
                 ratingBadgeHtml = `
                     <div class="rating-badge" title="Avaliação Duo Gourmet">
-                        <i class="fa-solid fa-star"></i> ${r.rating}
+                        <i class="fa-solid fa-star" aria-hidden="true"></i> ${escapeHtml(r.rating)}
                     </div>
                 `;
             }
@@ -1824,121 +1793,190 @@
             let googleRatingBadge = "";
             if (r.google_rating) {
                 googleRatingBadge = `
-                    <div class="rating-badge google-rating" title="Avaliação no Google Maps (${r.google_reviews_count} avaliações)">
-                        <i class="fa-brands fa-google"></i> ${r.google_rating} <span class="rating-count">(${formatReviewCount(r.google_reviews_count)})</span>
+                    <div class="rating-badge google-rating" title="Avaliação no Google Maps (${escapeAttr(r.google_reviews_count)} avaliações)">
+                        <i class="fa-brands fa-google" aria-hidden="true"></i> ${escapeHtml(r.google_rating)} <span class="rating-count">(${formatReviewCount(r.google_reviews_count)})</span>
                     </div>
                 `;
             }
 
-            // Seção especial da Restaurant Week
-            let rwSectionHtml = "";
-            if (r.is_restaurant_week && r.restaurant_week) {
-                const rw = r.restaurant_week;
-                let periodsHtml = "";
-                if (rw.periods && rw.periods.length > 0) {
-                    periodsHtml = rw.periods.map(p => `
-                        <span class="rw-period-chip">
-                            <strong>${p.period}:</strong> ${p.price || 'Preço Especial'}
-                        </span>
+            return { ratingBadgeHtml, googleRatingBadge };
+        }
+
+        function renderContactSection(r) {
+            if (!r.phone && !r.instagram && !r.website) return "";
+            
+            let html = '<div class="popup-contact">';
+            if (r.phone) {
+                html += `<span class="contact-item"><i class="fa-solid fa-phone" aria-hidden="true"></i> ${escapeHtml(r.phone)}</span>`;
+            }
+            if (r.instagram) {
+                const handle = r.instagram.replace('@', '');
+                html += `<a href="https://instagram.com/${encodeURIComponent(handle)}" target="_blank" rel="noopener noreferrer" class="contact-item" data-action="click_instagram" data-restaurant-name="${escapeAttr(r.name)}"><i class="fa-brands fa-instagram" aria-hidden="true"></i> ${escapeHtml(r.instagram)}</a>`;
+            }
+            if (r.website) {
+                html += `<a href="${escapeAttr(r.website)}" target="_blank" rel="noopener noreferrer" class="contact-item" data-action="click_website" data-restaurant-name="${escapeAttr(r.name)}"><i class="fa-solid fa-globe" aria-hidden="true"></i> Site</a>`;
+            }
+            html += '</div>';
+            return html;
+        }
+
+        function renderRwSection(r) {
+            if (!r.is_restaurant_week || !r.restaurant_week) return "";
+            const rw = r.restaurant_week;
+            
+            let periodsHtml = "";
+            if (rw.periods && rw.periods.length > 0) {
+                periodsHtml = rw.periods.map(p => `
+                    <span class="rw-period-chip">
+                        <strong>${escapeHtml(p.period)}:</strong> ${escapeHtml(p.price || 'Preço Especial')}
+                    </span>
+                `).join('');
+            }
+
+            let menusHtml = "";
+            if (rw.menus && rw.menus.length > 0) {
+                menusHtml = rw.menus.map(m => {
+                    const itemsList = (m.items || []).map(it => `
+                        <div style="margin-bottom: 6px;">
+                            <div class="rw-dish-stage"><i class="fa-solid fa-angle-right" aria-hidden="true"></i> ${escapeHtml(it.stage)}</div>
+                            <div class="rw-dish-desc">${escapeHtml(it.description)}</div>
+                        </div>
                     `).join('');
-                }
 
-                let menusHtml = "";
-                if (rw.menus && rw.menus.length > 0) {
-                    menusHtml = rw.menus.map(m => {
-                        const itemsList = (m.items || []).map(it => `
-                            <div style="margin-bottom: 6px;">
-                                <div class="rw-dish-stage"><i class="fa-solid fa-angle-right"></i> ${it.stage}</div>
-                                <div class="rw-dish-desc">${it.description}</div>
-                            </div>
-                        `).join('');
-
-                        return `
-                            <div style="margin-bottom: 8px;">
-                                <div style="font-weight:700; color:var(--text-main); margin-bottom:4px;">${m.menu_name} - ${m.period}</div>
-                                ${itemsList}
-                            </div>
-                        `;
-                    }).join('');
-                }
-
-                const menuAccordionHtml = menusHtml ? `
-                    <details class="rw-menu-accordion">
-                        <summary><i class="fa-solid fa-utensils"></i> Ver Menu Restaurant Week</summary>
-                        <div class="rw-menu-content">
-                            ${menusHtml}
+                    return `
+                        <div style="margin-bottom: 8px;">
+                            <div style="font-weight:700; color:var(--text-main); margin-bottom:4px;">${escapeHtml(m.menu_name)} - ${escapeHtml(m.period)}</div>
+                            ${itemsList}
                         </div>
-                    </details>
-                ` : "";
-
-                const rwId = (rw && rw.rw_id) ? rw.rw_id : '';
-                const specificRwUrl = (rw && rw.rw_page_url) ? rw.rw_page_url : (rwId ? `https://eventos.restaurantweek.com.br/belohorizonte/restaurante/${rwId}` : 'https://eventos.restaurantweek.com.br/belohorizonte');
-
-                rwSectionHtml = `
-                    <div class="popup-rw-card">
-                        <div class="popup-rw-header">
-                            <span class="popup-rw-title"><i class="fa-solid fa-wine-glass"></i> ${rw.event_edition || 'Restaurant Week'}</span>
-                            <a href="${specificRwUrl}" target="_blank" class="popup-rw-badge" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px;" title="Ver página deste restaurante no site da Restaurant Week">
-                                Ver Página <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:9px;"></i>
-                            </a>
-                        </div>
-                        ${periodsHtml ? `<div class="popup-rw-periods">${periodsHtml}</div>` : ""}
-                        ${menuAccordionHtml}
-                    </div>
-                `;
+                    `;
+                }).join('');
             }
 
-            // Horários do Duo Gourmet
-            let scheduleSectionHtml = "";
-            if (r.is_duo !== false && scheduleRows) {
-                scheduleSectionHtml = `
-                    <div class="popup-schedule-title">
-                        <i class="fa-regular fa-calendar"></i> Horários Disponíveis no Duo
+            const menuAccordionHtml = menusHtml ? `
+                <details class="rw-menu-accordion">
+                    <summary><i class="fa-solid fa-utensils" aria-hidden="true"></i> Ver Menu Restaurant Week</summary>
+                    <div class="rw-menu-content">
+                        ${menusHtml}
                     </div>
-                    <table class="popup-schedule-table">
-                        <thead>
-                            <tr>
-                                <th>Dia</th>
-                                <th>Almoço</th>
-                                <th>Jantar</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${scheduleRows}
-                        </tbody>
-                    </table>
-                `;
-            }
+                </details>
+            ` : "";
 
-            // Botões de ação
-            let actionButtonsHtml = `
-                <a href="${mapsUrl}" target="_blank" class="popup-btn btn-google" onclick="window.logRestaurantAction('click_google_maps', decodeURIComponent('${encodeURIComponent(r.name)}'))">
-                    <i class="fa-solid fa-location-dot"></i> Google Maps
+            const rwId = (rw && rw.rw_id) ? rw.rw_id : '';
+            const specificRwUrl = (rw && rw.rw_page_url) ? rw.rw_page_url : (rwId ? `https://eventos.restaurantweek.com.br/belohorizonte/restaurante/${rwId}` : 'https://eventos.restaurantweek.com.br/belohorizonte');
+
+            return `
+                <div class="popup-rw-card">
+                    <div class="popup-rw-header">
+                        <span class="popup-rw-title"><i class="fa-solid fa-wine-glass" aria-hidden="true"></i> ${escapeHtml(rw.event_edition || 'Restaurant Week')}</span>
+                        <a href="${escapeAttr(specificRwUrl)}" target="_blank" rel="noopener noreferrer" class="popup-rw-badge" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px;" title="Ver página deste restaurante no site da Restaurant Week">
+                            Ver Página <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:9px;" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                    ${periodsHtml ? `<div class="popup-rw-periods">${periodsHtml}</div>` : ""}
+                    ${menuAccordionHtml}
+                </div>
+            `;
+        }
+
+        function renderScheduleSection(r) {
+            if (r.is_duo === false || !r.schedule) return "";
+            
+            let scheduleRows = "";
+            const daysOrder = ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo'];
+            
+            daysOrder.forEach(day => {
+                const sched = r.schedule[day] || r.schedule[day + ' (Hoje)'] || {};
+                const almoco = sched.almoco || "-";
+                const jantar = sched.jantar || "-";
+                
+                // Destacar o dia atual
+                const isToday = day === todayDayName;
+                const highlightStyle = isToday ? "style='font-weight: 700; color: #92400e; background: #fef3c7; border-radius: 4px;'" : "";
+                
+                scheduleRows += `<tr ${highlightStyle}>
+                    <td>${escapeHtml(day.split('-')[0])}</td>
+                    <td>${escapeHtml(almoco)}</td>
+                    <td>${escapeHtml(jantar)}</td>
+                </tr>`;
+            });
+
+            if (!scheduleRows) return "";
+
+            return `
+                <div class="popup-schedule-title">
+                    <i class="fa-regular fa-calendar" aria-hidden="true"></i> Horários Disponíveis no Duo
+                </div>
+                <table class="popup-schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Dia</th>
+                            <th>Almoço</th>
+                            <th>Jantar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${scheduleRows}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function renderActionButtons(r) {
+            const mapsUrl = r.google_maps_url || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.name + ", " + r.address)}`;
+            const fullUrl = r.url && r.url.startsWith('http') ? r.url : `https://www.duogourmet.com.br${r.url || ''}`;
+
+            let html = `
+                <a href="${escapeAttr(mapsUrl)}" target="_blank" rel="noopener noreferrer" class="popup-btn btn-google" data-action="click_google_maps" data-restaurant-name="${escapeAttr(r.name)}">
+                    <i class="fa-solid fa-location-dot" aria-hidden="true"></i> Google Maps
                 </a>
             `;
             if (r.is_duo !== false && r.url) {
-                actionButtonsHtml += `
-                    <a href="${fullUrl}" target="_blank" class="popup-btn btn-duo" onclick="window.logRestaurantAction('click_view_on_duo', decodeURIComponent('${encodeURIComponent(r.name)}'))">
-                        <i class="fa-solid fa-link"></i> Ver no Duo
+                html += `
+                    <a href="${escapeAttr(fullUrl)}" target="_blank" rel="noopener noreferrer" class="popup-btn btn-duo" data-action="click_view_on_duo" data-restaurant-name="${escapeAttr(r.name)}">
+                        <i class="fa-solid fa-link" aria-hidden="true"></i> Ver no Duo
                     </a>
                 `;
             }
             if (r.is_restaurant_week) {
                 const rwId = (r.restaurant_week && r.restaurant_week.rw_id) ? r.restaurant_week.rw_id : '';
                 const directRwUrl = (r.restaurant_week && r.restaurant_week.rw_page_url) ? r.restaurant_week.rw_page_url : (rwId ? `https://eventos.restaurantweek.com.br/belohorizonte/restaurante/${rwId}` : 'https://eventos.restaurantweek.com.br/belohorizonte');
-                actionButtonsHtml += `
-                    <a href="${directRwUrl}" target="_blank" class="popup-btn btn-rw" onclick="window.logRestaurantAction('click_restaurant_week', decodeURIComponent('${encodeURIComponent(r.name)}'))">
-                        <i class="fa-solid fa-wine-glass"></i> Ver no Week
+                html += `
+                    <a href="${escapeAttr(directRwUrl)}" target="_blank" rel="noopener noreferrer" class="popup-btn btn-rw" data-action="click_restaurant_week" data-restaurant-name="${escapeAttr(r.name)}">
+                        <i class="fa-solid fa-wine-glass" aria-hidden="true"></i> Ver no Week
                     </a>
                 `;
+            }
+            return html;
+        }
+
+        function generatePopupHTML(r) {
+            const { ratingBadgeHtml, googleRatingBadge } = renderRatingBadges(r);
+            const contactHtml = renderContactSection(r);
+            const rwSectionHtml = renderRwSection(r);
+            const scheduleSectionHtml = renderScheduleSection(r);
+            const actionButtonsHtml = renderActionButtons(r);
+
+            let descriptionHtml = "";
+            if (r.description) {
+                descriptionHtml = `<div class="popup-description" title="${escapeAttr(r.description)}">${escapeHtml(r.description)}</div>`;
+            }
+
+            let editorialHtml = "";
+            if (r.google_editorial_summary) {
+                editorialHtml = `<div class="popup-editorial"><em>"${escapeHtml(r.google_editorial_summary)}"</em></div>`;
+            }
+
+            let priceHtml = "";
+            if (r.google_price_level) {
+                priceHtml = ` <span class="price-level" title="Faixa de preço Google: ${r.google_price_level} de 4">${"$".repeat(r.google_price_level)}</span>`;
             }
 
             return `
                 <div class="popup-content">
                     <div class="popup-header">
                         <div>
-                            <div class="popup-name">${r.name}</div>
-                            <div class="popup-cuisine">${r.cuisine}${priceHtml}</div>
+                            <div class="popup-name">${escapeHtml(r.name)}</div>
+                            <div class="popup-cuisine">${escapeHtml(r.cuisine)}${priceHtml}</div>
                         </div>
                         <div class="ratings-container">
                             ${ratingBadgeHtml}
@@ -1946,7 +1984,7 @@
                         </div>
                     </div>
                     <div class="popup-address">
-                        <i class="fa-solid fa-map-pin"></i><strong>${r.neighborhood} (${r.city})</strong>: ${r.address}
+                        <i class="fa-solid fa-map-pin" aria-hidden="true"></i><strong>${escapeHtml(r.neighborhood)} (${escapeHtml(r.city)})</strong>: ${escapeHtml(r.address)}
                     </div>
                     
                     ${contactHtml}
@@ -2373,9 +2411,16 @@
         }
 
         function setupEventListeners() {
+            // Debounce leve para a busca textual (evita reprocessamento a cada letra isolada)
             const searchInput = document.getElementById('searchInput');
             if (searchInput) {
-                searchInput.addEventListener('input', filterRestaurants);
+                let searchDebounceTimer;
+                searchInput.addEventListener('input', () => {
+                    clearTimeout(searchDebounceTimer);
+                    searchDebounceTimer = setTimeout(() => {
+                        filterRestaurants();
+                    }, 180);
+                });
             }
 
             const cityFilter = document.getElementById('cityFilter');
@@ -2413,6 +2458,21 @@
                     const chip = e.target.closest('.category-chip');
                     if (chip && chip.dataset.source) {
                         setSourceFilter(chip.dataset.source);
+                    }
+                });
+            }
+
+            // Delegação unificada para cliques em botões e links de popups no mapa
+            const mapContainer = document.getElementById('map');
+            if (mapContainer) {
+                mapContainer.addEventListener('click', (e) => {
+                    const actionTarget = e.target.closest('[data-action]');
+                    if (actionTarget) {
+                        const action = actionTarget.dataset.action;
+                        const restaurantName = actionTarget.dataset.restaurantName;
+                        if (action && restaurantName && typeof window.logRestaurantAction === 'function') {
+                            window.logRestaurantAction(action, restaurantName);
+                        }
                     }
                 });
             }
