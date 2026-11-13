@@ -345,7 +345,8 @@
             border: 1px solid #334155;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
             pointer-events: none;
-            max-width: 250px;
+            width: max-content;
+            max-width: 280px;
             line-height: 1.4;
         }
 
@@ -367,10 +368,21 @@
             list-style: none;
             margin: 0;
             padding: 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .cluster-preview-tooltip ul::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .cluster-preview-tooltip ul::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 2px;
         }
 
         .cluster-preview-tooltip li {
-            padding: 2px 0;
+            padding: 1.5px 0;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -1532,11 +1544,11 @@
                 }
             });
 
-            // Tooltip no hover em clusters de até 4 restaurantes (Opção A)
+            // Tooltip no hover em clusters de até 10 restaurantes (Opção A)
             markerCluster.on('clustermouseover', function(c) {
                 const cluster = c.layer;
                 const count = cluster.getChildCount();
-                if (count <= 4) {
+                if (count <= 10) {
                     const markersInCluster = cluster.getAllChildMarkers();
                     const names = markersInCluster
                         .map(m => m.restaurantData ? m.restaurantData.name : '')
