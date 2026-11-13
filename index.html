@@ -318,6 +318,23 @@
             text-decoration: underline;
         }
 
+        /* Marker Tooltip */
+        .custom-map-tooltip {
+            background: #1e293b;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 5px 9px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            white-space: nowrap;
+        }
+
+        .leaflet-tooltip-top.custom-map-tooltip::before {
+            border-top-color: #1e293b;
+        }
+
         /* Custom Scrollbar */
         .restaurant-list::-webkit-scrollbar {
             width: 6px;
@@ -1354,7 +1371,7 @@
             
             <footer class="sidebar-footer">
                 Created By <a href="https://rogerioc.github.io/about/" target="_blank">Rogerio C.S</a><br>
-                Dados extraídos de <a href="https://www.duogourmet.com.br" target="_blank">Duo Gourmet</a> &copy;
+                Dados extraídos de <a href="https://www.duogourmet.com.br" target="_blank">Duo Gourmet</a> e <a href="https://restaurantweek.com.br" target="_blank">Restaurant Week</a> &copy;
             </footer>
         </aside>
         
@@ -2167,6 +2184,12 @@
             filtered.forEach(r => {
                 // Marcador no Mapa
                 const marker = L.marker([r.lat, r.lon], { icon: getMarkerColor(r) });
+                marker.bindTooltip(r.name, {
+                    direction: 'top',
+                    offset: [0, -12],
+                    opacity: 0.95,
+                    className: 'custom-map-tooltip'
+                });
                 marker.bindPopup(generatePopupHTML(r), {
                     maxWidth: 340,
                     minWidth: 270,
