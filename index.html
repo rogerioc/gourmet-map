@@ -205,6 +205,96 @@
             font-weight: 400;
         }
 
+        /* Gourmet Game Banner CTA */
+        .game-cta-banner {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            margin: 0 0 12px 0;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(249, 115, 22, 0.12) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            border-radius: 10px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-cta-banner:hover {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.14) 0%, rgba(249, 115, 22, 0.2) 100%);
+            border-color: rgba(239, 68, 68, 0.45);
+            transform: translateY(-1.5px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+        }
+
+        .game-cta-icon {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            color: #ffffff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .game-cta-banner:hover .game-cta-icon {
+            transform: rotate(15deg) scale(1.08);
+        }
+
+        .game-cta-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .game-cta-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            line-height: 1.25;
+        }
+
+        .game-cta-title span.badge-new {
+            background: #ef4444;
+            color: #fff;
+            font-size: 9px;
+            font-weight: 800;
+            padding: 1px 5px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .game-cta-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+            line-height: 1.3;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .game-cta-arrow {
+            color: #ef4444;
+            font-size: 11px;
+            transition: transform 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .game-cta-banner:hover .game-cta-arrow {
+            transform: translateX(3px);
+        }
+
         /* Inputs & Filtros */
         .search-wrapper {
             position: relative;
@@ -1376,7 +1466,22 @@
                 <p class="subtitle-desc">Guia gastronômico com festivais, curadoria e benefícios</p>
                 <div class="sidebar-obs"><i class="fa-solid fa-circle-info"></i> Curadoria em BH e região (com suporte estendido a SP)</div>
 
-                
+                <!-- Banner Gourmet Game -->
+                <a href="https://rogerioc.github.io/gourmet-game/" target="_blank" rel="noopener noreferrer" class="game-cta-banner" id="gameCtaBanner" aria-label="Abrir jogo interativo Gourmet Game para escolher onde comer">
+                    <div class="game-cta-icon" aria-hidden="true">
+                        <i class="fa-solid fa-dice"></i>
+                    </div>
+                    <div class="game-cta-content">
+                        <div class="game-cta-title">
+                            Em dúvida de onde ir? <span class="badge-new">Jogo</span>
+                        </div>
+                        <div class="game-cta-sub">
+                            Encontre a resposta no Gourmet Game
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-arrow-up-right-from-square game-cta-arrow" aria-hidden="true"></i>
+                </a>
+
                 <div class="search-wrapper">
                     <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
                     <input type="text" id="searchInput" class="search-input" placeholder="Pesquisar restaurante..." aria-label="Pesquisar restaurante por nome">
@@ -2597,6 +2702,18 @@
             const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
             if (sidebarToggleBtn) {
                 sidebarToggleBtn.addEventListener('click', toggleSidebar);
+            }
+
+            // Tracking clique no banner Gourmet Game
+            const gameCtaBanner = document.getElementById('gameCtaBanner');
+            if (gameCtaBanner) {
+                gameCtaBanner.addEventListener('click', () => {
+                    if (typeof window.logFirebaseEvent === 'function') {
+                        window.logFirebaseEvent('click_gourmet_game', {
+                            source: 'sidebar_banner'
+                        });
+                    }
+                });
             }
 
             // Delegação para chips de categoria
