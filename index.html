@@ -24,6 +24,35 @@
     <!-- FontAwesome para ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- Analytics (Umami Self-Hosted - Sem Cookies & LGPD-friendly) -->
+    <script defer src="https://umami-alpha-flame.vercel.app/script.js"
+        data-website-id="0a4940bb-1771-4c8e-bddf-75c0a27b5bed"></script>
+
+    <script>
+        // Helper global de eventos (garante envio ao Umami mesmo se Firebase for bloqueado por AdBlock)
+        window.trackUmamiEvent = function(eventName, params = {}) {
+            try {
+                if (window.umami && typeof window.umami.track === 'function') {
+                    window.umami.track(eventName, params);
+                }
+            } catch (err) {
+                // ignore tracking errors
+            }
+        };
+
+        window.logFirebaseEvent = function(eventName, params = {}) {
+            window.trackUmamiEvent(eventName, params);
+        };
+
+        window.logRestaurantAction = function(actionType, restaurantName) {
+            if (typeof window.logFirebaseEvent === 'function') {
+                window.logFirebaseEvent(actionType, {
+                    item_name: restaurantName
+                });
+            }
+        };
+    </script>
+
     <!-- Firebase SDK (App & Analytics) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
@@ -49,9 +78,13 @@
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
 
-        // Função global de log de eventos
+        // Função global de log de eventos (Umami cookieless + Firebase se aceito)
         window.logFirebaseEvent = function(eventName, params = {}) {
-            // Ignorar se não houver consentimento
+            if (typeof window.trackUmamiEvent === 'function') {
+                window.trackUmamiEvent(eventName, params);
+            }
+
+            // Ignorar Firebase se não houver consentimento de cookies
             if (localStorage.getItem('cookies-accepted') !== 'true') {
                 return;
             }
@@ -59,15 +92,6 @@
                 logEvent(analytics, eventName, params);
             } catch (error) {
                 console.warn("Erro ao logar evento no Firebase:", error);
-            }
-        };
-
-        // Função global para facilitar log de cliques em restaurantes (evita problemas de aspas)
-        window.logRestaurantAction = function(actionType, restaurantName) {
-            if (typeof window.logFirebaseEvent === 'function') {
-                window.logFirebaseEvent(actionType, {
-                    item_name: restaurantName
-                });
             }
         };
     </script>
